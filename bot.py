@@ -123,33 +123,49 @@ def random_add(message):
 def game(message):
     zagadka_chislo()
     try:
-        msg = bot.reply_to(message, '''Правила:
-Компьютер задумывает четыре различные цифры из 0,1,2,...9.
-Игрок делает ходы, чтобы узнать эти цифры и их порядок.
-Каждый ход состоит из четырёх цифр, 0 может стоять на первом месте.
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        b_yes = types.KeyboardButton('✅ Да ✅')
+        b_no = types.KeyboardButton('👽 Я пельмешек 👽')
+        markup.add(b_yes, b_no)
+        msg = bot.reply_to(message, '''Правила:\n
+Компьютер задумывает четыре различные цифры из 0,1,2,...9.\n
+Игрок делает ходы, чтобы узнать эти цифры и их порядок.\n
+Каждый ход состоит из четырёх цифр, 0 может стоять на первом месте.\n
 В ответ компьютер показывает число отгаданных цифр,
-стоящих на своих местах (число быков) и число отгаданных цифр,
-стоящих не на своих местах (число коров). Начинаем?''')
+стоящих на своих местах (число быков) и число отгаданных 
+цифр, стоящих не на своих местах (число коров). \n\nНачинаем?''', reply_markup=markup)
         bot.register_next_step_handler(msg, process_game)
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 
 def process_game(message):
-    msg = bot.send_message(message.chat.id, 'Введите число: ')
-    bot.register_next_step_handler(msg, process_game_proverka)
-    print(_my_number)
+    if message.text == '✅ Да ✅':
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+        b_lox = types.KeyboardButton('🌀 Сдаюсь 🌀')
+        markup.add(b_lox)
+        msg = bot.send_message(message.chat.id, 'Введите число: ', reply_markup=markup)
+        bot.register_next_step_handler(msg, process_game_proverka)
+    else:
+        sticker = open('AnimSticker.tgs', 'rb')
+        bot.send_sticker(message.chat.id, sticker)
+        send_welcome(message)
 
 
 def process_game_proverka(message):
     chat_id = message.chat.id
     number = message.text
-    vivod = proverka_chisla(number=number)
-    if _my_number[0] == list(number):
-        bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!')
+    if number == '🌀 Сдаюсь 🌀':
+        sticker = open('lox.webp', 'rb')
+        bot.send_sticker(chat_id, sticker)
+        game(message)
     else:
-        msg = bot.send_message(chat_id, f'{vivod}\n\nВведите число: ')
-        bot.register_next_step_handler(msg, process_game_proverka)
+        vivod = proverka_chisla(number=number)
+        if _my_number[0] == list(number):
+            bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!')
+        else:
+            msg = bot.send_message(chat_id, f'{vivod}\n\nВведите число: ')
+            bot.register_next_step_handler(msg, process_game_proverka)
 
 
 @bot.message_handler(commands=['exit'])
