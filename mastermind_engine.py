@@ -10,15 +10,13 @@ def zagadka_chislo():
 
 def proverka_chisla(number):
     bulls, cows = 0, 0
+    gift = ''
     for i in number:
         if i.isdigit() is not True or len(number) != 4:
-            print(ValueError("Ход - четырехзначное число"))
-            return "False"
-            break
+            return ValueError("Ход - четырехзначное число")
     set_number = set(number)
     if len(number) != len(set_number):
-        print('Цифры не должны повторяться!')
-        return "False"
+        return "Цифры не должны повторяться!"
     else:
         for num in enumerate(_my_number[0]):
             for num_user in enumerate(list(number)):
@@ -26,4 +24,10 @@ def proverka_chisla(number):
                     bulls += 1
                 elif num[1] == num_user[1]:
                     cows += 1
-    return f"Быков: {bulls}, Коров: {cows}"
+    if 2 < cows < 4 or bulls == 1:
+        gift = 'Хороший ход!'
+    elif bulls == 3:
+        gift = 'Сильный ход!'
+    elif cows > 1 and bulls > 1 or bulls > 2:
+        gift = 'Очень сильный ход!'
+    return f"Быков: {bulls}, Коров: {cows}\n{gift}"

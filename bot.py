@@ -1,17 +1,21 @@
 import telebot, random, time
 from telebot import types
+from mastermind_engine import zagadka_chislo, proverka_chisla, _my_number
 
 bot = telebot.TeleBot("5486699586:AAFOL-pqTSn5cctJi95j8A8gHA0YW-6ed8M")
 
-help1 = """   /help - Вывести список доступных команд.
+help1 = """   
+/start - Начать работу.
+/help - Вывести список доступных команд.
 /add - Добавить задачу.
 /show - Показать добавленные задачи.
+/game - Поиграем?
 /random - Добавление случайной задачи на Сегодня
 /exit - Выход."""
 bd = {}
 user_dict = {}
 random_task = ["Прибухнуть", "Полежать", "Поесть"]
-tconv = lambda x: time.strftime("%H:%M:%S %d.%m.%Y", time.localtime(x)) #Конвертация даты в читабельный вид
+tconv = lambda x: time.strftime("%H:%M:%S %d.%m.%Y", time.localtime(x))  # Конвертация даты в читабельный вид
 
 
 def add_bd(data, task):
@@ -36,7 +40,8 @@ def send_welcome(message):
     b_show = types.KeyboardButton('📝 Посмотреть задачи 📝')
     b_random = types.KeyboardButton('👁‍🗨 Магическая задача 👁‍🗨')
     b_exit = types.KeyboardButton('🫡 Попрощаться 🫡')
-    markup.add(b_add, b_show, b_random, b_exit, b_help)
+    b_game = types.KeyboardButton('🎮 Поиграем? 🎮')
+    markup.add(b_add, b_show, b_random, b_game, b_exit, b_help)
     bot.send_message(message.chat.id, f'Привет, {message.from_user.first_name}', reply_markup=markup)
 
 
@@ -102,6 +107,7 @@ def process_name_step1(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
+
 @bot.message_handler(commands=['random'])
 def random_add(message):
     task = random.choice(random_task)
@@ -109,12 +115,48 @@ def random_add(message):
     command = data1.split()
     data = command[1]
     add_bd(data, task)
-    bot.send_message(message.chat.id, 'Добрый день ' + message.from_user.first_name + '\nЗадача ' + task + ' записана на ' + data)
+    bot.send_message(message.chat.id,
+                     'Добрый день ' + message.from_user.first_name + '\nЗадача ' + task + ' записана на ' + data)
+
+
+@bot.message_handler(commands=['game'])
+def game(message):
+    zagadka_chislo()
+    try:
+        msg = bot.reply_to(message, '''Правила:
+Компьютер задумывает четыре различные цифры из 0,1,2,...9.
+Игрок делает ходы, чтобы узнать эти цифры и их порядок.
+Каждый ход состоит из четырёх цифр, 0 может стоять на первом месте.
+В ответ компьютер показывает число отгаданных цифр,
+стоящих на своих местах (число быков) и число отгаданных цифр,
+стоящих не на своих местах (число коров). Начинаем?''')
+        bot.register_next_step_handler(msg, process_game)
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
+
+
+def process_game(message):
+    msg = bot.send_message(message.chat.id, 'Введите число: ')
+    bot.register_next_step_handler(msg, process_game_proverka)
+    print(_my_number)
+
+
+def process_game_proverka(message):
+    chat_id = message.chat.id
+    number = message.text
+    vivod = proverka_chisla(number=number)
+    if _my_number[0] == list(number):
+        bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!')
+    else:
+        msg = bot.send_message(chat_id, f'{vivod}\n\nВведите число: ')
+        bot.register_next_step_handler(msg, process_game_proverka)
+
 
 @bot.message_handler(commands=['exit'])
 def exit(message):
     sticker = open('sticker2.webp', 'rb')
     bot.send_sticker(message.chat.id, sticker)
+
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
@@ -126,6 +168,8 @@ def echo_all(message):
         random_add(message)
     elif message.text == "🫡 Попрощаться 🫡":
         exit(message)
+    elif message.text == "🎮 Поиграем? 🎮":
+        game(message)
     elif message.text == "🙏🏻 Информация 🙏🏻":
         help(message)
     else:
