@@ -163,6 +163,7 @@ def process_game_proverka(message):
         vivod = proverka_chisla(number=number)
         if _my_number[0] == list(number):
             bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!')
+            send_welcome(message)
         else:
             msg = bot.send_message(chat_id, f'{vivod}\n\nВведите число: ')
             bot.register_next_step_handler(msg, process_game_proverka)

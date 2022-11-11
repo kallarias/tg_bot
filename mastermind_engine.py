@@ -1,6 +1,6 @@
 import random
 
-NUM = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+NUM = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 _my_number = []
 
 def zagadka_chislo():
@@ -24,10 +24,11 @@ def proverka_chisla(number):
                     bulls += 1
                 elif num[1] == num_user[1]:
                     cows += 1
-    if 2 < cows < 4 or bulls == 1:
-        gift = 'Хороший ход!'
-    elif bulls == 3:
+
+    if bulls == 3:
         gift = 'Сильный ход!'
     elif cows > 1 and bulls > 1 or bulls > 2:
         gift = 'Очень сильный ход!'
+    elif 2 < cows < 4 or bulls == 1:
+        gift = 'Хороший ход!'
     return f"Быков: {bulls}, Коров: {cows}\n{gift}"
