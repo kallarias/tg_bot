@@ -29,6 +29,6 @@ def proverka_chisla(number):
         gift = 'Сильный ход!'
     elif cows > 1 and bulls > 1 or bulls > 2:
         gift = 'Очень сильный ход!'
-    elif 2 < cows < 4 or bulls == 1:
+    elif 2 < cows < 5 or bulls == 1:
         gift = 'Хороший ход!'
     return f"Быков: {bulls}, Коров: {cows}\n{gift}"
