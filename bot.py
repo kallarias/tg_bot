@@ -1,7 +1,7 @@
 import telebot, random, time
 from telebot import types
 from mastermind_engine import zagadka_chislo, proverka_chisla, _my_number
-
+from draw.draw_mem import PostCardMaker
 bot = telebot.TeleBot("5486699586:AAFOL-pqTSn5cctJi95j8A8gHA0YW-6ed8M")
 
 help1 = """   
@@ -41,7 +41,8 @@ def send_welcome(message):
     b_random = types.KeyboardButton('👁‍🗨 Магическая задача 👁‍🗨')
     b_exit = types.KeyboardButton('🫡 Попрощаться 🫡')
     b_game = types.KeyboardButton('🎮 Поиграем? 🎮')
-    markup.add(b_add, b_show, b_random, b_game, b_exit, b_help)
+    b_draw = types.KeyboardButton('🖼 Творим 🖼')
+    markup.add(b_add, b_show, b_random, b_game, b_draw, b_exit, b_help)
     bot.send_message(message.chat.id, f'Привет, {message.from_user.first_name}', reply_markup=markup)
 
 
@@ -175,6 +176,22 @@ def exit(message):
     bot.send_sticker(message.chat.id, sticker)
 
 
+@bot.message_handler(commands=['draw'])
+def draw(message):
+    msg = bot.send_message(message.chat.id, 'Введите фразу')
+    bot.register_next_step_handler(msg, draw_now)
+
+
+def draw_now(message):
+    chat_id = message.chat.id
+    draw_mem = PostCardMaker(mem=message.text)
+    mem_addr = f'mem_{message.from_user.first_name}_{message.date}.jpg'
+    draw_mem.make(out_path=mem_addr)
+    photo = open(f'C:\\Python\\Projects\\tg_bot\\draw\\pictures\\{mem_addr}', 'rb')
+    bot.send_photo(chat_id, photo)
+    send_welcome(message)
+
+
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if message.text == "✏️ Добавить задачу ✏️":
@@ -187,6 +204,8 @@ def echo_all(message):
         exit(message)
     elif message.text == "🎮 Поиграем? 🎮":
         game(message)
+    elif message.text == "🖼 Творим 🖼":
+        draw(message)
     elif message.text == "🙏🏻 Информация 🙏🏻":
         help(message)
     else:
