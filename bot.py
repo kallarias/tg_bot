@@ -1,8 +1,35 @@
-import telebot, random, time
+import random
+import telebot
+import time
+import logging
 from telebot import types
-from mastermind_engine import zagadka_chislo, proverka_chisla, _my_number
+
 from draw.draw_mem import PostCardMaker
-bot = telebot.TeleBot("5486699586:AAFOL-pqTSn5cctJi95j8A8gHA0YW-6ed8M")
+from mastermind_engine import zagadka_chislo, proverka_chisla, _my_number
+
+try:
+    import settings
+except ImportError:
+    exit('DO settings.py.default settings.py and set TOKEN')
+
+log = logging.getLogger("bot")
+
+
+def configure_logging():
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(logging.Formatter("%(levelname)s %(message)s"))
+    stream_handler.setLevel(logging.INFO)
+    log.addHandler(stream_handler)
+
+    file_handler = logging.FileHandler("bot.log", encoding='utf-8')
+    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    file_handler.setLevel(logging.DEBUG)
+    log.addHandler(file_handler)
+    log.setLevel(logging.DEBUG)
+
+
+bot = telebot.TeleBot(settings.TOKEN)
+
 
 help1 = """   
 /start - Начать работу.
@@ -10,12 +37,24 @@ help1 = """
 /add - Добавить задачу.
 /show - Показать добавленные задачи.
 /game - Поиграем?
+/draw - Создать мем
 /random - Добавление случайной задачи на Сегодня
 /exit - Выход."""
 bd = {}
 user_dict = {}
 random_task = ["Прибухнуть", "Полежать", "Поесть"]
 tconv = lambda x: time.strftime("%H:%M:%S %d.%m.%Y", time.localtime(x))  # Конвертация даты в читабельный вид
+configure_logging()
+bot.set_my_commands([
+    telebot.types.BotCommand("/start", "Основное меню"),
+    telebot.types.BotCommand("/help", "Вывести список доступных команд"),
+    telebot.types.BotCommand("/add", "Добавить задачу"),
+    telebot.types.BotCommand("/show", "Показать добавленные задачи"),
+    telebot.types.BotCommand("/game", "Поиграем?"),
+    telebot.types.BotCommand("/draw", "Создать мем"),
+    telebot.types.BotCommand("/random", "Добавление случайной задачи на Сегодня"),
+    telebot.types.BotCommand("/exit", "Выход"),
+])
 
 
 def add_bd(data, task):
@@ -34,6 +73,8 @@ class add_tasks:
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    log.debug(f"пришла команда start от {message.from_user.id}")
+    log.info(f"пришла команда start от {message.from_user.id}")
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     b_help = types.KeyboardButton('🙏🏻 Информация 🙏🏻')
     b_add = types.KeyboardButton('✏️ Добавить задачу ✏️')
