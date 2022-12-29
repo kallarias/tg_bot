@@ -1,1 +1,8 @@
 TOKEN = ""
+DB_CONFIG = dict(
+    provider='postgres',
+    user='postgres',
+    password='',
+    host='localhost',
+    database='bot_bd'
+)

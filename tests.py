@@ -40,4 +40,5 @@ class Test1(TestCase):
                                       'username': 'Jskoo', 'type': 'private'}, 'date': 1671572168, 'text': '/start',
                              'entities': [{'offset': 0, 'length': 6, 'type': 'bot_command'}]}}
     def test_ok(self):
-        bot.message_handler().
+        # bot.message_handler().
+        pass
