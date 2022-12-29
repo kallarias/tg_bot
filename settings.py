@@ -15,6 +15,7 @@ HELP_INFO = """
 /game - Поиграем?
 /draw - Создать мем
 /random - Добавление случайной задачи на Сегодня
+/anime - Для избранных
 /exit - Выход."""
 RANDOM_THINGS = ["Прибухнуть", "Полежать", "Поесть"]
 BOT_MENU_CONFIG = [
@@ -25,5 +26,6 @@ BOT_MENU_CONFIG = [
     telebot.types.BotCommand("/game", "Поиграем?"),
     telebot.types.BotCommand("/draw", "Создать мем"),
     telebot.types.BotCommand("/random", "Добавление случайной задачи на Сегодня"),
+    telebot.types.BotCommand("/anime", "Для избранных"),
     telebot.types.BotCommand("/exit", "Выход"),
 ]

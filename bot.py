@@ -87,7 +87,11 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['help'])
 def f_help(message):
-    bot.send_message(message.chat.id, bot_help)
+    markup = types.InlineKeyboardMarkup()
+    switch_button = types.InlineKeyboardButton(text='Порекомендовать бота',
+                                               switch_inline_query="Думаю ты не разочаруешься")
+    markup.add(switch_button)
+    bot.send_message(message.chat.id, bot_help, reply_markup=markup)
 
 
 @bot.message_handler(commands=['add'])
@@ -165,28 +169,6 @@ def show(message):
     bot.send_message(message.chat.id,
                      f"Select {LSTEP[step]}",
                      reply_markup=calendar)
-    # msg = bot.reply_to(message, "Выберите дату:")
-    # bot.register_next_step_handler(msg, process_name_step1)
-
-
-# @db_session
-# def process_name_step1(message):
-#     try:
-#         chat_id = message.chat.id
-#         data = message.text
-#         text = ""
-#         user_id = message.from_user.id
-#         task = UserTasks.select_by_sql("SELECT * FROM UserTasks p WHERE p.date = $data AND p.user_id = $user_id")
-#         if len(task) > 0:
-#             text = "Планы на дату: " + data.upper()
-#             for p in task:
-#                 text = f'{text}\n❗️ {p.task} '
-#         else:
-#             text = data.upper()
-#             text = "На дату " + text + "\nДанных нет!"
-#         bot.send_message(chat_id, text)
-#     except Exception as e:
-#         bot.reply_to(message, 'oooops' + e)
 
 
 @bot.message_handler(commands=['random'])
@@ -271,6 +253,13 @@ def draw_now(message):
     bot.send_photo(chat_id, photo)
     send_welcome(message)
 
+
+@bot.message_handler(commands=['anime'])
+def anime(message):
+    markup = types.InlineKeyboardMarkup()
+    btn_my_site = types.InlineKeyboardButton(text='Секретный уголок', url='https://shikimori.one/Jskoo')
+    markup.add(btn_my_site)
+    bot.send_message(message.chat.id, "Попробуй посмотри их все!", reply_markup=markup)
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
