@@ -8,7 +8,7 @@ from telebot import types
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 
 from draw.draw_mem import PostCardMaker
-from mastermind_engine import zagadka_chislo, proverka_chisla, _my_number
+from mastermind_engine import FourBulls
 from models import UserTasks
 
 try:
@@ -40,6 +40,7 @@ random_task = settings.RANDOM_THINGS
 tconv = lambda x: time.strftime("%H:%M:%S %Y-%m-%d", time.localtime(x))  # Конвертация даты в читабельный вид
 configure_logging()
 bot.set_my_commands(settings.BOT_MENU_CONFIG)
+shag = 0
 
 
 @db_session
@@ -57,9 +58,10 @@ class AddTasks:
         self.task = None
         self.flag = 0
         self.user_id = 0
+        self.game = None
 
 
-def add_user(message, flag=0):
+def add_user(message, user_flag=0, game=False):
     chat_id = message.chat.id
     name = message.from_user.first_name
     user = AddTasks(name)
@@ -67,7 +69,9 @@ def add_user(message, flag=0):
     user_id = message.from_user.id
     add_id = user_dict[chat_id]
     add_id.user_id = user_id
-    add_id.flag = flag
+    add_id.flag = user_flag
+    if game:
+        add_id.game = FourBulls(user_id=message.from_user.id)
 
 
 @bot.message_handler(commands=['start'])
@@ -96,7 +100,7 @@ def f_help(message):
 
 @bot.message_handler(commands=['add'])
 def add(message):
-    add_user(message=message, flag=1)
+    add_user(message=message, user_flag=1)
     calendar, step = DetailedTelegramCalendar().build()
     bot.send_message(message.chat.id,
                      f"Select {LSTEP[step]}",
@@ -123,7 +127,7 @@ def cal(call):
                                             call.message.message_id)
                 bot.register_next_step_handler(msg, process_sex_step)
             except Exception as e:
-                bot.reply_to(call.message, 'oooops' + e)
+                bot.reply_to(call.message, e)
         elif user_info.flag == 2:
             try:
                 text = ""
@@ -159,12 +163,12 @@ def process_sex_step(message):
             add_tasks.task) + ' записана на ' + add_tasks.data)
         log.info(f"Добавлена задача для пользователя {message.from_user.id}")
     except Exception as e:
-        bot.reply_to(message, 'oooops' + e)
+        bot.reply_to(message, e)
 
 
 @bot.message_handler(commands=['show'])
 def show(message):
-    add_user(message=message, flag=2)
+    add_user(message=message, user_flag=2)
     calendar, step = DetailedTelegramCalendar().build()
     bot.send_message(message.chat.id,
                      f"Select {LSTEP[step]}",
@@ -184,7 +188,7 @@ def random_add(message):
 
 @bot.message_handler(commands=['game'])
 def game(message):
-    zagadka_chislo()
+    add_user(message=message, game=True)
     try:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         b_yes = types.KeyboardButton('✅ Да ✅')
@@ -223,9 +227,17 @@ def process_game_proverka(message):
         bot.send_sticker(chat_id, sticker)
         game(message)
     else:
-        vivod = proverka_chisla(number=number)
+        global shag
+        shag += 1
+        chat_id = message.chat.id
+        user_info = user_dict[chat_id]
+        vivod = user_info.game.proverka_chisla(number=number)
+        _my_number = user_info.game.return_number()
+        log.info(f"загаданное число {_my_number[0]}")
         if _my_number[0] == list(number):
-            bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!')
+            bot.send_message(chat_id, f'{vivod}\n\nМууу! Победа!\n Вы угадали число за {shag} шагов!')
+            shag = 0
+            _my_number.clear()
             send_welcome(message)
         else:
             msg = bot.send_message(chat_id, f'{vivod}\n\nВведите число: ')
@@ -260,6 +272,7 @@ def anime(message):
     btn_my_site = types.InlineKeyboardButton(text='Секретный уголок', url='https://shikimori.one/Jskoo')
     markup.add(btn_my_site)
     bot.send_message(message.chat.id, "Попробуй посмотри их все!", reply_markup=markup)
+
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):

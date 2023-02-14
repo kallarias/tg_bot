@@ -1,5 +1,5 @@
-.idea
+.idea/
 settings.py
-__pycache__
-venv
+__pycache__/
+venv/
 *.log
