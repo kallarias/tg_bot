@@ -14,6 +14,7 @@ HELP_INFO = """
 /show - Показать добавленные задачи.
 /game - Поиграем?
 /draw - Создать мем
+/chat - Персональный психолог ChatGPT
 /random - Добавление случайной задачи на Сегодня
 /anime - Для избранных
 /exit - Выход."""
@@ -25,7 +26,10 @@ BOT_MENU_CONFIG = [
     telebot.types.BotCommand("/show", "Показать добавленные задачи"),
     telebot.types.BotCommand("/game", "Поиграем?"),
     telebot.types.BotCommand("/draw", "Создать мем"),
+    telebot.types.BotCommand("/chat", "Поговорим?"),
     telebot.types.BotCommand("/random", "Добавление случайной задачи на Сегодня"),
     telebot.types.BotCommand("/anime", "Для избранных"),
     telebot.types.BotCommand("/exit", "Выход"),
 ]
+
+OPENAI_API_KEY = ""

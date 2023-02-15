@@ -10,6 +10,7 @@ from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from draw.draw_mem import PostCardMaker
 from mastermind_engine import FourBulls
 from models import UserTasks
+from chat_gpt import chat_gpt
 
 try:
     import settings
@@ -85,7 +86,8 @@ def send_welcome(message):
     b_exit = types.KeyboardButton('🫡 Попрощаться 🫡')
     b_game = types.KeyboardButton('🎮 Поиграем? 🎮')
     b_draw = types.KeyboardButton('🖼 Творим 🖼')
-    markup.add(b_add, b_show, b_random, b_game, b_draw, b_exit, b_help)
+    b_chat = types.KeyboardButton('💬 Поговорим? 💬')
+    markup.add(b_add, b_show, b_random, b_game, b_draw, b_chat, b_exit, b_help)
     bot.send_message(message.chat.id, f'Привет, {message.from_user.first_name}', reply_markup=markup)
 
 
@@ -274,6 +276,19 @@ def anime(message):
     bot.send_message(message.chat.id, "Попробуй посмотри их все!", reply_markup=markup)
 
 
+@bot.message_handler(commands=['chat'])
+def chat(message):
+    msg = bot.send_message(message.chat.id, '💬 Введи вопрос, на который хочешь получить ответ.')
+    bot.register_next_step_handler(msg, active_chat)
+
+
+def active_chat(message):
+    chat_id = message.chat.id
+    answer = chat_gpt(text=message.text)
+    msg = bot.send_message(chat_id, answer)
+    bot.register_next_step_handler(msg, active_chat)
+
+
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if message.text == "✏️ Добавить задачу ✏️":
@@ -288,6 +303,8 @@ def echo_all(message):
         game(message)
     elif message.text == "🖼 Творим 🖼":
         draw(message)
+    elif message.text == "💬 Поговорим? 💬":
+        chat(message)
     elif message.text == "🙏🏻 Информация 🙏🏻":
         f_help(message)
     else:
